@@ -18,7 +18,7 @@ public class TaskService {
 
     public Task create(String username, Task task){
          task.setId(null);
-         task.setUserId(username);
+         task.setUsername(username);
          task.setCompleted(false);
          task.setCreatedAt(Instant.now());
          task.setUpdatedAt(Instant.now());
@@ -26,12 +26,12 @@ public class TaskService {
     }
 
     public List<Task> list(String username){
-        return repo.findByUserId(username);
+        return repo.findByUsername(username);
     }
 
     public Task getByIdForUser(String username, String id){
         Task t= repo.findById(id).orElseThrow(()-> new RuntimeException("Task is not found"));
-        if(!t.getUserId().equals(username)) throw new RuntimeException("Forbidden");
+        if(!t.getId().equals(username)) throw new RuntimeException("Forbidden");
         return t;
     }
 

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/tasks")
+@RequestMapping("/tasks")
 public class TaskController {
 
     private final TaskService service;
@@ -18,7 +18,7 @@ public class TaskController {
     public TaskController(TaskService service) { this.service = service; }
 
     @PostMapping
-    public Task create(@AuthenticationPrincipal UserDetails ud, @RequestBody Task task) {
+    public Task createTask(@AuthenticationPrincipal UserDetails ud, @RequestBody Task task) {
         return service.create(ud.getUsername(), task);
     }
 
