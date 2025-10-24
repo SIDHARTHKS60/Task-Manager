@@ -14,12 +14,16 @@ public class AppUser {
     private String username;
     private String password;
 
-    public AppUser() {
+    public AppUser(String aaaaaAa) {
     }
 
     public AppUser(String username, String password) {
         this.username = username;
         this.password = password;
+    }
+
+    public AppUser() {
+
     }
 
     public String getUsername() {

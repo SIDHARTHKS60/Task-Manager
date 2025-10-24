@@ -2,6 +2,8 @@ package com.example.Task.Manager.service;
 
 import com.example.Task.Manager.model.Task;
 import com.example.Task.Manager.repository.TaskRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -18,6 +20,7 @@ public class TaskService {
 
     public Task create(String username, Task task){
          task.setId(null);
+         task.setTaskId(getNextTaskId());
          task.setUsername(username);
          task.setCompleted(false);
          task.setCreatedAt(Instant.now());
@@ -25,18 +28,35 @@ public class TaskService {
          return repo.save(task);
     }
 
-    public List<Task> list(String username){
+    private int getNextTaskId() {
+        // find the task with the largest taskId and +1
+        Task lastTask = repo.findTopByOrderByTaskIdDesc();
+        return (lastTask == null) ? 1 : lastTask.getTaskId() + 1;
+    }
+
+    public List<Task> listTasks(String username){
         return repo.findByUsername(username);
     }
 
-    public Task getByIdForUser(String username, String id){
-        Task t= repo.findById(id).orElseThrow(()-> new RuntimeException("Task is not found"));
-        if(!t.getId().equals(username)) throw new RuntimeException("Forbidden");
+    public Task getTaskById(int taskId) {
+        // Get the logged-in user's username
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = auth.getName();
+
+        // Find task
+        Task t = repo.findByTaskId(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        // Ownership check
+        if (!t.getUsername().equals(currentUsername)) {
+            throw new RuntimeException("Forbidden");
+        }
+
         return t;
     }
 
-    public Task update(String username, String id, Task payload) {
-        Task t = getByIdForUser(username, id);
+    public Task update(int taskId, Task payload) {
+        Task t = getTaskById(taskId);
         t.setTitle(payload.getTitle());
         t.setDescription(payload.getDescription());
         t.setCompleted(payload.isCompleted());
@@ -44,8 +64,8 @@ public class TaskService {
         return repo.save(t);
     }
 
-    public void delete(String username, String id) {
-        Task t = getByIdForUser(username, id);
+    public void delete(int taskId) {
+        Task t = getTaskById(taskId);
         repo.delete(t);
     }
 
